@@ -2,7 +2,7 @@
 
 If there are too many indices we can merge them into a single index by using ```_reindex``` endpoint:
 ```sh
-curl -XPOST -H "Content-Type: application/json" -d '{"source": { "index" : "some-index-pattern-*"}, "dest" : {"index" : "new-index"}}' "http://<host>>:9200/_reindex"
+curl -XPOST -H "Content-Type: application/json" -d '{"source": { "index" : "some-index-pattern-*"}, "dest" : {"index" : "new-index"}}' "http://<host>:9200/_reindex"
 ```
 
 It is better to check if the enw index has nonzero document count:
