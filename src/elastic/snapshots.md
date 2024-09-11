@@ -67,3 +67,37 @@ curl -X GET "http://<host>:9200/_snapshot/<repository_name>/<snapshot_name>"
 curl -X DELETE "http://<host>:9200/_snapshot/<repository_name>/<snapshot_name>"
 ```
 
+## Daily backup keeping last N backups
+
+```sh
+#!/bin/sh
+
+CURL=`which curl`
+TODAY=`date +"%d%m%Y"`
+HOST="http://10.10.10.1:9200"
+REPOSITORY="s3-backup"
+BACKUP_LIMIT=3
+
+# Get current snapshots list and get the latest BACKUP_LIMIT entrys
+$CURL -s -X GET "${HOST}/_snapshot/${REPOSITORY}/_all" | jq '.snapshots[].snapshot' | sort -r | tr -d \" > snapshot.list
+cat snapshot.list | head -$BACKUP_LIMIT > snapshot.keep
+
+# For all the snapshot missing in to keep entrys - delete them
+for snapshot in `grep -v -f snapshot.keep snapshot.list`; do
+  $CURL -s -X GET "${HOST}/_snapshot/${REPOSITORY}/${snapshot}" | jq -e '.snapshots[] | .state=="SUCCESS"' > /dev/null
+  if [ $? == "0" ]; then
+     $CURL -s -X DELETE "${HOST}/_snapshot/${REPOSITORY}/${snapshot}"
+  fi
+done;
+
+# We make today backup only if it doesn't exist in snapshots list
+echo $TODAY | grep -vf snapshot.list
+if [ $? == "0" ]; then
+  $CURL -s -X PUT "${HOST}/_snapshot/${REPOSITORY}/${TODAY}" > backup.output
+fi
+```
+
+backup.output should be
+```json
+{"acknowledged":true}
+```
