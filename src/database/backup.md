@@ -12,11 +12,9 @@ xtrabackup=`which xtrabackup`
 borg=`which borg`
 S3_CLIENT="do-backup"
 S3_BUCKET="some-bucket"
-S3_ACCESS_KEY="XXXX"
-S3_SECRET_KEY="XXXXXX"
+S3_SUBPATH="/db_backup"
 MYSQL_PASS=""
 BORG_PRUNE_ARGS="--keep-within=1d --keep-daily=14 --keep-weekly=4 --keep-monthly=6"
-
 
 
 if [ -e ${LIVE}/mysql_$yesterday ]; then
@@ -66,11 +64,11 @@ if [ -e $LIVE/mysql_$date ]; then
   $xtrabackup --backup --incremental-basedir=$basedir --target-dir=$LIVE/mysql_${date}_incremental/${tm}_$newchunk --user=root --password=$MYSQL_PASS
 fi
 
-if [ -z $backup_exists ]; then
+if [ -z "$backup_exists" ]; then
 # Put backup into repository
     cd $LIVE/mysql_$date
     $borg create --stats --compression zlib,9 $BACKUP_REPO::$date . > /root/borg.log
     $borg prune $BORG_PRUNE_ARGS $BACKUP_REPO > /root/borg_prune.log
-    RCLONE_CONFIG_DO_BACKUP_ACCESS_KEY_ID="$S3_ACCESS_KEY" RCLONE_CONFIG_DO_BACKUP_SECRET_ACCESS_KEY="$S3_SECRET_KEY" rclone sync --transfers=1 --checkers=1 $BACKUP_REPO $S3_CLIENT:$S3_BUCKET/db-backup
+    rclone sync --transfers=1 --checkers=1 $BACKUP_REPO ${S3_CLIENT}:${S3_BUCKET}${BUCKET_SUBPATH}
 fi
 ```
