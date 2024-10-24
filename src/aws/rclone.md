@@ -12,6 +12,11 @@ Put this into /etc/fstab
 remote-name:bucket /mount-dir rclone rw,nofail,_netdev,x-systemd.automount,args2env,vfs_cache_mode=writes,vfs_refresh,allow_other,no_modtime,config=/etc/rclone.conf,cache_dir=/var/cache/rclone 0 0
 ```
 
+And make symlink
+```sh
+ln -s /usr/bin/rclone /sbin/mount.rclone
+```
+
 ## Installing rclone as a docker plugin
 
 ```sh
@@ -27,7 +32,7 @@ Be sure to have rclone.conf in /var/lib/docker-plugins/rclone/config by default
 or you can set the rclone options during installation
 
 ```sh
-docker plugin install rclone/docker-volume-rclone:amd64 --alias rclone --grant-all-permissions args="-v --allow-other --vfs-cache-mode=writes" config=/etc/rclone
+docker plugin install rclone/docker-volume-rclone:amd64 --alias rclone --grant-all-permissions args="-v --allow-other --vfs-cache-mode=writes config=/etc/rclone"
 ```
 
 or after that disabling the plugin
