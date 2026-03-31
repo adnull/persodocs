@@ -72,3 +72,11 @@ if [ -z "$backup_exists" ]; then
     rclone sync --transfers=1 --checkers=1 $BACKUP_REPO ${S3_CLIENT}:${S3_BUCKET}${BUCKET_SUBPATH}
 fi
 ```
+
+## One line db backup to a remote host
+
+Backing up to /some/dir
+
+```bash
+ssh root@10.10.10.10 "innobackupex --user=root --password=*** --no-timestamp --slave-info --stream=tar /tmp | gzip - -c -f 2>/dev/null" | tar -xzpf - -C /some/dir
+```
